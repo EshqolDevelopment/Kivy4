@@ -1,14 +1,14 @@
-import base64
 import darkdetect
 import os
 import pyperclip
 import threading
 import time
-
+import sys
 from kivy import Config
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
+from kivymd.uix.pickers import MDDatePicker, MDTimePicker
 
 Config.set('graphics', 'resizable', 0)
 Config.set('input', 'mouse', 'mouse, multitouch_on_demand')
@@ -22,7 +22,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '3.1.0'
+__version__ = '3.2.2'
 
 
 class Content(BoxLayout):
@@ -127,7 +127,9 @@ class Kivy4(MDApp):
     height: "100dp"'''
 
         if app_data:
-            app_data_path = os.getenv('APPDATA') + '/' + app_name
+            is_windows = sys.platform.startswith('win')
+            app_data_path = os.getenv('APPDATA') + '/' + app_name if is_windows else app_name
+
             self.appdata_path = app_data_path
             self.create_files(dict_of_files)
 
@@ -146,6 +148,10 @@ class Kivy4(MDApp):
         self.screen_positions(screen_size, minimum, center)
 
         self.run()
+
+    @property
+    def ids(self):
+        return self.root.ids
 
     def setProperties(self, main_color, icon, toolbar, string, pre_string, toolbar_name):
 
@@ -348,7 +354,6 @@ class Kivy4(MDApp):
         self.theme_cls.theme_style = value
 
     def getToolbar(self, properties: list, toolbar_name: str):
-
         if properties == True:
             right_icons, left_icons = '[[app.dark_mode_icon, lambda x: app.reverseDarkMode()]]', '[]'
 
@@ -367,7 +372,7 @@ class Kivy4(MDApp):
 
         return f'''
 Screen:
-    MDToolbar:
+    MDTopAppBar:
         id: toolbar
         pos_hint: {{"top": 1}}
         elevation: 10
@@ -440,15 +445,18 @@ Screen:
     def on_request_close(disable_x: bool = False):
         return disable_x
 
-    @thread
     def write_to_clipboard(self, text: str):
         pyperclip.copy(text)
 
     def show_date_picker(self, on_save, mode='picker'):
-        from kivymd.uix.picker import MDDatePicker
         date_dialog = MDDatePicker(mode=mode)
         date_dialog.bind(on_save=on_save, on_cancel=self.on_cancel_picker)
         date_dialog.open()
+
+    def show_time_picker(self, on_save, mode='picker'):
+        time_dialog = MDTimePicker(mode=mode)
+        time_dialog.bind(on_save=on_save, on_cancel=self.on_cancel_picker)
+        time_dialog.open()
 
     def on_cancel_picker(self, instance, value):
         pass
@@ -488,31 +496,3 @@ Screen:
 
         except Exception as e:
             print(e)
-
-    @staticmethod
-    def get_shell_startup():
-        return os.path.join(os.getenv("appdata"), "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
-
-    @thread
-    def writeBase64(self, file, name):
-        name = os.path.basename(file).split('.')[0]
-
-        with open(file, 'rb') as b:
-            with open('bases.py', 'a') as f:
-                f.write(f'\n\n{name} = "{base64.b64encode(b.read()).decode()}"')
-
-    def getBase64(self, file, name):
-
-        if '.' not in name:
-            raise Exception(f'The destiny file name must contain "."')
-
-        try:
-            import bases
-
-        except ImportError:
-            return '"bases" file is not exist'
-
-        base = eval(f'bases.{os.path.basename(file).split(".")[0]}')
-
-        with open(self.appdata_path + '/' + name, 'wb') as f:
-            f.write(base64.b64decode(base.encode()))
