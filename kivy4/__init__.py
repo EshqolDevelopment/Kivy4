@@ -22,7 +22,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '3.2.2'
+__version__ = '3.2.6'
 
 
 class Content(BoxLayout):
