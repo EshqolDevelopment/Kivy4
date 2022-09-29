@@ -22,7 +22,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '3.2.6'
+__version__ = '1.0.1'
 
 
 class Content(BoxLayout):
@@ -34,7 +34,7 @@ def icons(f: str = ''):
     print([x for x in list(md_icons.keys()) if f in x])
 
 
-def getSpec(name: str, icon: str = 'icon.ico', filename: str = 'main.py', path: str = os.getcwd()):
+def get_spec(name: str, icon: str = 'icon.ico', filename: str = 'main.py', path: str = os.getcwd()):
     path = path.replace("\\", r"\\")
 
     with open(filename.replace('.py', '.spec'), 'w') as f:
@@ -135,10 +135,10 @@ class Kivy4(MDApp):
 
             self.moon_icon = moon_icon
             self.sun_icon = sun_icon
-            self.isDarkMode()
+            self.is_dark_mode()
 
         self.dialog = None
-        self.setProperties(main_color, icon, toolbar, string, pre_string, toolbar_name)
+        self.set_properties(main_color, icon, toolbar, string, pre_string, toolbar_name)
         self.disable_x = disable_x
 
         screen = get_monitors()[0]
@@ -147,13 +147,11 @@ class Kivy4(MDApp):
 
         self.screen_positions(screen_size, minimum, center)
 
-        self.run()
-
     @property
     def ids(self):
         return self.root.ids
 
-    def setProperties(self, main_color, icon, toolbar, string, pre_string, toolbar_name):
+    def set_properties(self, main_color, icon, toolbar, string, pre_string, toolbar_name):
 
         for x in pre_string.split('\n'):
             if 'x,y=' in x.replace(' ', '') and '#' not in x:
@@ -165,7 +163,7 @@ class Kivy4(MDApp):
         self.builder_string += self.custom_classes()
 
         if toolbar:
-            self.builder_string += self.getToolbar(toolbar, toolbar_name)
+            self.builder_string += self.get_toolbar(toolbar, toolbar_name)
 
             for x in string.split('\n'):
                 if 'x,y=' in x.replace(' ', '') and '#' not in x:
@@ -185,10 +183,10 @@ class Kivy4(MDApp):
         Window.bind(on_dropfile=lambda *args: self.on_drop_file(*args),
                     on_request_close=lambda x: self.on_request_close(self.disable_x))
 
-        self.Build()
+        self.pre_build()
         return Builder.load_string(self.builder_string)
 
-    def Build(self):
+    def pre_build(self):
         pass
 
     def screen_positions(self, screen_size, minimum=None, center=True):
@@ -234,12 +232,12 @@ class Kivy4(MDApp):
 
             if list_of_files:
                 for file in list_of_files:
-                    self.setFile(file, list_of_files[file])
+                    self.set_file(file, list_of_files[file])
 
         except Exception as e:
             return e
 
-    def setFile(self, file, value, extension='.txt'):
+    def set_file(self, file, value, extension='.txt'):
         path_to_create = f'{self.appdata_path}/{file}{extension}'
 
         if isinstance(value, int):
@@ -259,7 +257,7 @@ class Kivy4(MDApp):
             print(e)
             return e
 
-    def getFile(self, file, default=None, create_file_if_not_exist=False, extension='.txt'):
+    def get_file(self, file, default=None, create_file_if_not_exist=False, extension='.txt'):
         path_of_file = f'{self.appdata_path}/{file}{extension}'
 
         try:
@@ -279,7 +277,7 @@ class Kivy4(MDApp):
 
         except FileNotFoundError:
             if create_file_if_not_exist:
-                self.setFile(file, default)
+                self.set_file(file, default)
 
             return default
 
@@ -287,17 +285,11 @@ class Kivy4(MDApp):
             print(e)
             return default
 
-    def get_file(self, *args):
-        self.getFile(*args)
-
-    def set_file(self, *args):
-        self.setFile(*args)
-
-    def isDarkMode(self, filename='dark mode.txt'):
+    def is_dark_mode(self, filename='dark mode.txt'):
         try:
             with open(self.appdata_path + '/' + filename, 'r') as f:
                 current_mode = f.read()
-                self.setDarkModeIcon(current_mode)
+                self.set_dark_mode_icon(current_mode)
 
                 return current_mode == 'Dark'
 
@@ -306,30 +298,30 @@ class Kivy4(MDApp):
                 default = darkdetect.theme()
                 f.write(default)
 
-                self.setDarkModeIcon(default)
+                self.set_dark_mode_icon(default)
 
                 return default == 'Dark'
 
         except AttributeError:
             return False
 
-    def setDarkMode(self, value=None, filename='dark mode'):
+    def set_dark_mode(self, value=None, filename='dark mode'):
         if value is None:
             value = darkdetect.theme()
 
-        self.setFile(filename, value)
-        self.setDarkModeIcon(value)
+        self.set_file(filename, value)
+        self.set_dark_mode_icon(value)
 
-    def reverseDarkMode(self, filename: str = 'dark mode.txt'):
+    def reverse_dark_mode(self, filename: str = 'dark mode.txt'):
         try:
             with open(self.appdata_path + '/' + filename, 'r') as f:
                 current_mode = f.read()
 
                 if current_mode == 'Dark':
-                    self.setDarkMode('Light')
+                    self.set_dark_mode('Light')
                     return 'Light'
 
-                self.setDarkMode('Dark')
+                self.set_dark_mode('Dark')
                 return 'Dark'
 
         except FileNotFoundError:
@@ -337,14 +329,14 @@ class Kivy4(MDApp):
                 default = darkdetect.theme()
                 f.write(default)
 
-                self.setDarkModeIcon(default)
+                self.set_dark_mode_icon(default)
 
                 return default
 
         except AttributeError:
             return False
 
-    def setDarkModeIcon(self, value):
+    def set_dark_mode_icon(self, value):
         if value == 'Dark':
             self.dark_mode_icon = self.moon_icon
 
@@ -353,13 +345,12 @@ class Kivy4(MDApp):
 
         self.theme_cls.theme_style = value
 
-    def getToolbar(self, properties: list, toolbar_name: str):
+    def get_toolbar(self, properties: list, toolbar_name: str):
         if properties == True:
-            right_icons, left_icons = '[[app.dark_mode_icon, lambda x: app.reverseDarkMode()]]', '[]'
+            right_icons, left_icons = '[[app.dark_mode_icon, lambda x: app.reverse_dark_mode()]]', '[]'
 
         elif len(properties) == 2:
             left_icons, right_icons, name = properties[0], properties[1], self.app_name
-            name = self.app_name
 
         else:
             left_icons, right_icons, name = properties
@@ -445,7 +436,8 @@ Screen:
     def on_request_close(disable_x: bool = False):
         return disable_x
 
-    def write_to_clipboard(self, text: str):
+    @staticmethod
+    def write_to_clipboard(text: str):
         pyperclip.copy(text)
 
     def show_date_picker(self, on_save, mode='picker'):
@@ -477,13 +469,13 @@ Screen:
                         text=cancel_text,
                         theme_text_color="Custom",
                         text_color=self.theme_cls.primary_color,
-                        on_press=cancel_func
+                        on_release=cancel_func
                     ),
                     MDFlatButton(
                         text=okay_text,
                         theme_text_color="Custom",
                         text_color=self.theme_cls.primary_color,
-                        on_press=okay_func
+                        on_release=okay_func
                     ),
                 ],
             )
@@ -493,6 +485,5 @@ Screen:
     def dismiss(self):
         try:
             self.dialog.dismiss()
-
         except Exception as e:
             print(e)

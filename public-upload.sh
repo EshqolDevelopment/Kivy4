@@ -7,6 +7,6 @@ pip3 install twine
 read -p "Enter username: " user
 read -p "Enter password: " pass
 
-twine upload --repository pypi dist/* -u "$user" -p "$pass"
+python3 twine upload --repository pypi dist/* -u "$user" -p "$pass"
 
 rm -rf build dist Kivy4.egg-info
