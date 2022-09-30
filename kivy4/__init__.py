@@ -1,3 +1,4 @@
+import json
 import darkdetect
 import os
 import pyperclip
@@ -22,16 +23,16 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '5.0.4'
+__version__ = '5.0.5'
 
 
 class Content(BoxLayout):
     pass
 
 
-def icons(f: str = ''):
+def icons(search_value: str = ''):
     from kivymd.icon_definitions import md_icons
-    print([x for x in list(md_icons.keys()) if f in x])
+    print([icon for icon in list(md_icons.keys()) if search_value in icon])
 
 
 def get_spec(name: str, icon: str = 'icon.ico', filename: str = 'main.py', path: str = os.getcwd()):
@@ -94,7 +95,7 @@ def thread(func):
     return inner
 
 
-def tic(func):
+def measure_time(func):
     def inner(*args, **kwargs):
         tic = time.perf_counter()
         func(*args, **kwargs)
@@ -207,7 +208,6 @@ class Kivy4(MDApp):
             Window.minimum_height = self.height * min_y
             Window.minimum_width = self.width * min_x
 
-
         else:
             Window.size = (x, y)
             Window.minimum_height = min_y
@@ -237,43 +237,25 @@ class Kivy4(MDApp):
         except Exception as e:
             return e
 
-    def set_file(self, file, value, extension='.txt'):
+    def set_file(self, file, value, extension='.txt', is_json=False):
         path_to_create = f'{self.appdata_path}/{file}{extension}'
-
-        if isinstance(value, int):
-            value_to_save = f'<$i>{value}'
-
-        elif isinstance(value, float):
-            value_to_save = f'<$f>{value}'
-
-        else:
-            value_to_save = str(value)
-
-        try:
+        if is_json:
             with open(path_to_create, 'w') as f:
-                f.write(value_to_save)
+                f.write(json.dumps(value, indent=4))
+        else:
+            with open(path_to_create, 'w') as f:
+                f.write(value)
 
-        except Exception as e:
-            print(e)
-            return e
-
-    def get_file(self, file, default=None, create_file_if_not_exist=False, extension='.txt'):
+    def get_file(self, file, default=None, create_file_if_not_exist=False, extension='.txt', is_json=False):
         path_of_file = f'{self.appdata_path}/{file}{extension}'
 
         try:
             with open(path_of_file, 'r') as f:
                 value = f.read()
 
-                if not value.startswith('<$'):
-                    return value
-
-                if value.startswith('<$i>'):
-                    return int(value.lstrip('<$i>'))
-
-                elif value.startswith('<$f>'):
-                    return float(value.lstrip('<$i>'))
-
-                return value
+            if is_json:
+                return json.loads(value)
+            return value
 
         except FileNotFoundError:
             if create_file_if_not_exist:
@@ -346,7 +328,7 @@ class Kivy4(MDApp):
         self.theme_cls.theme_style = value
 
     def get_toolbar(self, properties: list, toolbar_name: str):
-        if properties == True:
+        if properties is True:
             right_icons, left_icons = '[[app.dark_mode_icon, lambda x: app.reverse_dark_mode()]]', '[]'
 
         elif len(properties) == 2:
@@ -429,7 +411,8 @@ Screen:
     md_bg_color: app.theme_cls.primary_color
 '''
 
-    def on_drop_file(self, *args):
+    @staticmethod
+    def on_drop_file(*args):
         print(*args)
 
     @staticmethod
