@@ -23,7 +23,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '5.0.5'
+__version__ = '5.1.6'
 
 
 class Content(BoxLayout):
@@ -109,7 +109,8 @@ def measure_time(func):
 class Kivy4(MDApp):
     dark_mode_icon = StringProperty('')
 
-    def __init__(self, string: str = '', app_name: str = '', dict_of_files: dict = None,
+    def __init__(self, string: str = '', app_name: str = '', dict_of_files: dict[str, str] = None,
+                 list_of_dirs: list[str] = None,
                  screen_size=None, minimum=None, center: bool = True,
                  sun_icon: str = 'white-balance-sunny', moon_icon: str = 'weather-night',
                  main_color: str = 'Blue', icon: str = '', toolbar=False, app_data: bool = True,
@@ -133,6 +134,7 @@ class Kivy4(MDApp):
 
             self.appdata_path = app_data_path
             self.create_files(dict_of_files)
+            self.create_dirs(list_of_dirs)
 
             self.moon_icon = moon_icon
             self.sun_icon = sun_icon
@@ -237,16 +239,30 @@ class Kivy4(MDApp):
         except Exception as e:
             return e
 
+    def create_dirs(self, list_of_dirs):
+        try:
+            if list_of_dirs:
+                for folder in list_of_dirs:
+                    if not os.path.isdir(self.appdata_path + '/' + folder):
+                        os.mkdir(self.appdata_path + '/' + folder)
+
+        except Exception as e:
+            return e
+
     def set_file(self, file, value, extension='.txt', is_json=False):
+        if is_json:
+            extension = '.json'
+
         path_to_create = f'{self.appdata_path}/{file}{extension}'
         if is_json:
-            with open(path_to_create, 'w') as f:
-                f.write(json.dumps(value, indent=4))
-        else:
-            with open(path_to_create, 'w') as f:
-                f.write(value)
+            value = json.dumps(value, indent=4)
+
+        with open(path_to_create, 'w') as f:
+            f.write(value)
 
     def get_file(self, file, default=None, create_file_if_not_exist=False, extension='.txt', is_json=False):
+        if is_json:
+            extension = '.json'
         path_of_file = f'{self.appdata_path}/{file}{extension}'
 
         try:
@@ -428,8 +444,8 @@ Screen:
         date_dialog.bind(on_save=on_save, on_cancel=self.on_cancel_picker)
         date_dialog.open()
 
-    def show_time_picker(self, on_save, mode='picker'):
-        time_dialog = MDTimePicker(mode=mode)
+    def show_time_picker(self, on_save):
+        time_dialog = MDTimePicker()
         time_dialog.bind(on_save=on_save, on_cancel=self.on_cancel_picker)
         time_dialog.open()
 
@@ -442,26 +458,28 @@ Screen:
         if cancel_func is None:
             cancel_func = lambda *args: self.dismiss()
 
-        if not self.dialog:
-            self.dialog = MDDialog(
-                title=title,
-                type="custom",
-                content_cls=content,
-                buttons=[
-                    MDFlatButton(
-                        text=cancel_text,
-                        theme_text_color="Custom",
-                        text_color=self.theme_cls.primary_color,
-                        on_release=cancel_func
-                    ),
-                    MDFlatButton(
-                        text=okay_text,
-                        theme_text_color="Custom",
-                        text_color=self.theme_cls.primary_color,
-                        on_release=okay_func
-                    ),
-                ],
-            )
+        if self.dialog:
+            self.dismiss()
+
+        self.dialog = MDDialog(
+            title=title,
+            type="custom",
+            content_cls=content,
+            buttons=[
+                MDFlatButton(
+                    text=cancel_text,
+                    theme_text_color="Custom",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=cancel_func
+                ),
+                MDFlatButton(
+                    text=okay_text,
+                    theme_text_color="Custom",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=okay_func
+                ),
+            ],
+        )
 
         self.dialog.open()
 
@@ -470,3 +488,13 @@ Screen:
             self.dialog.dismiss()
         except Exception as e:
             print(e)
+
+    def get_files_content(self, path: str, is_json: bool = False):
+        dir_path = self.appdata_path + '/' + path
+        for file in os.listdir(dir_path):
+            if os.path.isfile(os.path.join(dir_path, file)):
+                with open(os.path.join(dir_path, file), 'r') as f:
+                    if is_json:
+                        yield json.load(f)
+                    else:
+                        yield f.read()
