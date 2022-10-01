@@ -23,7 +23,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '5.1.6'
+__version__ = '5.1.7'
 
 
 class Content(BoxLayout):
@@ -498,3 +498,6 @@ Screen:
                         yield json.load(f)
                     else:
                         yield f.read()
+
+    def delete_file(self, path):
+        os.remove(self.appdata_path + '/' + path)
