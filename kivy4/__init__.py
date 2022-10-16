@@ -23,7 +23,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '5.1.7'
+__version__ = '5.1.8'
 
 
 class Content(BoxLayout):
@@ -244,7 +244,7 @@ class Kivy4(MDApp):
             if list_of_dirs:
                 for folder in list_of_dirs:
                     if not os.path.isdir(self.appdata_path + '/' + folder):
-                        os.mkdir(self.appdata_path + '/' + folder)
+                        os.makedirs(self.appdata_path + '/' + folder)
 
         except Exception as e:
             return e
@@ -260,7 +260,7 @@ class Kivy4(MDApp):
         with open(path_to_create, 'w') as f:
             f.write(value)
 
-    def get_file(self, file, default=None, create_file_if_not_exist=False, extension='.txt', is_json=False):
+    def get_file(self, file, default=None, create_file_if_not_exist: str="", extension='.txt', is_json=False):
         if is_json:
             extension = '.json'
         path_of_file = f'{self.appdata_path}/{file}{extension}'
@@ -275,7 +275,7 @@ class Kivy4(MDApp):
 
         except FileNotFoundError:
             if create_file_if_not_exist:
-                self.set_file(file, default)
+                self.set_file(file, create_file_if_not_exist)
 
             return default
 
@@ -303,12 +303,16 @@ class Kivy4(MDApp):
         except AttributeError:
             return False
 
+    def on_theme_change(self, value):
+        pass
+
     def set_dark_mode(self, value=None, filename='dark mode'):
         if value is None:
             value = darkdetect.theme()
 
         self.set_file(filename, value)
         self.set_dark_mode_icon(value)
+        self.on_theme_change(value)
 
     def reverse_dark_mode(self, filename: str = 'dark mode.txt'):
         try:
@@ -461,24 +465,28 @@ Screen:
         if self.dialog:
             self.dismiss()
 
-        self.dialog = MDDialog(
-            title=title,
-            type="custom",
-            content_cls=content,
-            buttons=[
-                MDFlatButton(
+        buttons = []
+        if cancel_text:
+            buttons.append(MDFlatButton(
                     text=cancel_text,
                     theme_text_color="Custom",
                     text_color=self.theme_cls.primary_color,
                     on_release=cancel_func
-                ),
-                MDFlatButton(
+                ))
+
+        if okay_text:
+            buttons.append(MDFlatButton(
                     text=okay_text,
                     theme_text_color="Custom",
                     text_color=self.theme_cls.primary_color,
                     on_release=okay_func
-                ),
-            ],
+                ))
+
+        self.dialog = MDDialog(
+            title=title,
+            type="custom",
+            content_cls=content,
+            buttons=buttons,
         )
 
         self.dialog.open()
