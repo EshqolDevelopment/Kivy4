@@ -106,6 +106,27 @@ def measure_time(func):
     return inner
 
 
+@thread
+def file_dialog(callback: callable):
+    from tkinter import Tk, filedialog
+
+    if sys.platform == "darwin":
+        fd = os.popen("""osascript -e 'tell application (path to frontmost application as text)
+set myFile to choose file
+POSIX path of myFile
+end'""")
+        file_path = fd.read()
+        fd.close()
+        file_path = file_path[:-1]
+    else:
+        tk = Tk()
+        tk.withdraw()
+        file_path = filedialog.askopenfilename()
+
+    if file_path:
+        callback(file_path)
+
+
 class Kivy4(MDApp):
     dark_mode_icon = StringProperty('')
 
