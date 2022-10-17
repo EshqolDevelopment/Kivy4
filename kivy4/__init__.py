@@ -23,7 +23,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '5.1.9'
+__version__ = '5.2.0'
 
 
 class Content(BoxLayout):
@@ -478,7 +478,7 @@ Screen:
         pass
 
     def popup_kivy4(self, title='My popup', content=Content(), cancel_text='CANCEL', okay_text='OKAY',
-                    okay_func=lambda *args: print('yes'), cancel_func=None):
+                    okay_func=lambda *args: print('yes'), cancel_func=None, auto_dismiss=True):
 
         if cancel_func is None:
             cancel_func = lambda *args: self.dismiss()
@@ -508,6 +508,7 @@ Screen:
             type="custom",
             content_cls=content,
             buttons=buttons,
+            auto_dismiss=auto_dismiss
         )
 
         self.dialog.open()
