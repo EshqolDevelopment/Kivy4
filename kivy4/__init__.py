@@ -23,7 +23,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '5.2.0'
+__version__ = '5.2.1'
 
 
 class Content(BoxLayout):
@@ -125,6 +125,34 @@ end'""")
 
     if file_path:
         callback(file_path)
+
+
+def get_file(file_path, default=None, create_file_if_not_exist="", is_json=False, encoding='utf-8'):
+    try:
+        with open(file_path, 'r', encoding=encoding) as f:
+            value = f.read()
+
+        if is_json:
+            return json.loads(value)
+        return value
+
+    except FileNotFoundError:
+        if create_file_if_not_exist:
+            set_file(file_path, create_file_if_not_exist)
+
+        return default
+
+    except Exception as e:
+        print(e)
+        return default
+
+
+def set_file(file_path, value, is_json=False, encoding='utf-8'):
+    if is_json:
+        value = json.dumps(value, indent=4)
+
+    with open(file_path, 'w', encoding=encoding) as f:
+        f.write(value)
 
 
 class Kivy4(MDApp):
@@ -281,7 +309,7 @@ class Kivy4(MDApp):
         with open(path_to_create, 'w') as f:
             f.write(value)
 
-    def get_file(self, file, default=None, create_file_if_not_exist: str="", extension='.txt', is_json=False):
+    def get_file(self, file, default=None, create_file_if_not_exist="", extension='.txt', is_json=False):
         if is_json:
             extension = '.json'
         path_of_file = f'{self.appdata_path}/{file}{extension}'
@@ -489,19 +517,19 @@ Screen:
         buttons = []
         if cancel_text:
             buttons.append(MDFlatButton(
-                    text=cancel_text,
-                    theme_text_color="Custom",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=cancel_func
-                ))
+                text=cancel_text,
+                theme_text_color="Custom",
+                text_color=self.theme_cls.primary_color,
+                on_release=cancel_func
+            ))
 
         if okay_text:
             buttons.append(MDFlatButton(
-                    text=okay_text,
-                    theme_text_color="Custom",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=okay_func
-                ))
+                text=okay_text,
+                theme_text_color="Custom",
+                text_color=self.theme_cls.primary_color,
+                on_release=okay_func
+            ))
 
         self.dialog = MDDialog(
             title=title,
