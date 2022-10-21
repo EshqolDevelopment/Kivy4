@@ -23,7 +23,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '5.2.1'
+__version__ = '5.2.2'
 
 
 class Content(BoxLayout):
@@ -298,7 +298,7 @@ class Kivy4(MDApp):
         except Exception as e:
             return e
 
-    def set_file(self, file, value, extension='.txt', is_json=False):
+    def set_file(self, file, value, extension='.txt', is_json=False, encoding="utf-8"):
         if is_json:
             extension = '.json'
 
@@ -306,16 +306,16 @@ class Kivy4(MDApp):
         if is_json:
             value = json.dumps(value, indent=4)
 
-        with open(path_to_create, 'w') as f:
+        with open(path_to_create, 'w', encoding=encoding) as f:
             f.write(value)
 
-    def get_file(self, file, default=None, create_file_if_not_exist="", extension='.txt', is_json=False):
+    def get_file(self, file, default=None, create_file_if_not_exist="", extension='.txt', is_json=False, encoding='utf-8'):
         if is_json:
             extension = '.json'
         path_of_file = f'{self.appdata_path}/{file}{extension}'
 
         try:
-            with open(path_of_file, 'r') as f:
+            with open(path_of_file, 'r', encoding=encoding) as f:
                 value = f.read()
 
             if is_json:
