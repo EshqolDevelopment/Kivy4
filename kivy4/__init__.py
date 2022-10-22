@@ -23,7 +23,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '5.2.2'
+__version__ = '5.2.3'
 
 
 class Content(BoxLayout):
@@ -127,7 +127,7 @@ end'""")
         callback(file_path)
 
 
-def get_file(file_path, default=None, create_file_if_not_exist="", is_json=False, encoding='utf-8'):
+def get_file(file_path, default=None, is_json=False, encoding='utf-8'):
     try:
         with open(file_path, 'r', encoding=encoding) as f:
             value = f.read()
@@ -137,19 +137,12 @@ def get_file(file_path, default=None, create_file_if_not_exist="", is_json=False
         return value
 
     except FileNotFoundError:
-        if create_file_if_not_exist:
-            set_file(file_path, create_file_if_not_exist)
-
-        return default
-
-    except Exception as e:
-        print(e)
         return default
 
 
 def set_file(file_path, value, is_json=False, encoding='utf-8'):
     if is_json:
-        value = json.dumps(value, indent=4)
+        value = json.dumps(value, indent=2, ensure_ascii=False)
 
     with open(file_path, 'w', encoding=encoding) as f:
         f.write(value)
@@ -304,7 +297,7 @@ class Kivy4(MDApp):
 
         path_to_create = f'{self.appdata_path}/{file}{extension}'
         if is_json:
-            value = json.dumps(value, indent=4)
+            value = json.dumps(value, indent=2, ensure_ascii=False)
 
         with open(path_to_create, 'w', encoding=encoding) as f:
             f.write(value)
