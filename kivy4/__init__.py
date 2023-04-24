@@ -1,10 +1,4 @@
-import json
-import darkdetect
-import os
-import pyperclip
-import threading
-import time
-import sys
+import json, darkdetect, os, pyperclip, threading, time, sys
 from kivy import Config
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.button import MDFlatButton
@@ -23,7 +17,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '5.2.3'
+__version__ = '5.3.0'
 
 
 class Content(BoxLayout):
@@ -148,6 +142,15 @@ def set_file(file_path, value, is_json=False, encoding='utf-8'):
         f.write(value)
 
 
+def get_app_data(app_name: str) -> str:
+    is_windows = sys.platform.startswith('win')
+
+    if is_windows:
+        return os.path.join(os.getenv('APPDATA'), app_name)
+
+    return f'./appdata'
+
+
 class Kivy4(MDApp):
     dark_mode_icon = StringProperty('')
 
@@ -171,15 +174,12 @@ class Kivy4(MDApp):
     height: "100dp"'''
 
         if app_data:
-            is_windows = sys.platform.startswith('win')
-            app_data_path = os.getenv('APPDATA') + '/' + app_name if is_windows else app_name
-
-            self.appdata_path = app_data_path
+            self.appdata_path = get_app_data(app_name)
             self.create_files(dict_of_files)
             self.create_dirs(list_of_dirs)
 
             self.moon_icon = moon_icon
-            self.sun_icon = sun_icon
+            self.sun_iconf = sun_icon
             self.is_dark_mode()
 
         self.dialog = None
