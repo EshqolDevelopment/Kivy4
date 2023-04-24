@@ -17,7 +17,7 @@ from kivy.properties import *
 from kivymd.app import MDApp
 from screeninfo import get_monitors
 
-__version__ = '5.3.0'
+__version__ = '5.3.1'
 
 
 class Content(BoxLayout):
@@ -410,7 +410,7 @@ Screen:
     MDTopAppBar:
         id: toolbar
         pos_hint: {{"top": 1}}
-        elevation: 10
+        elevation: 3
         title: "{name}"
         right_action_items: {right_icons}
         left_action_items: {left_icons}
